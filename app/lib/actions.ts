@@ -4,6 +4,7 @@ import {z} from 'zod'
 import {sql} from '@vercel/postgres'
 import {revalidatePath} from "next/cache";
 import {redirect} from 'next/navigation'
+import {signIn} from '@/auth'
 
 export type State = {
     errors?: {
@@ -105,5 +106,16 @@ export const deleteInvoice = async (id:string) => {
     revalidatePath('/dashboard/invoices')
     return {
         message: `invoice ${id} deleted`
+    }
+}
+
+export const authenticate = async (prevState: string| undefined, formData: FormData)=> {
+    try {
+        await signIn('credentials', Object.fromEntries(formData));
+    } catch (err) {
+        if ((err as Error).message.includes('CredentialsSignin')) {
+            return 'CredentialSignin'
+        }
+        throw err
     }
 }
